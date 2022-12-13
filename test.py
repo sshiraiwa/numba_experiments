@@ -95,6 +95,7 @@ def generate_caller_text(settings):
 
 
 c12_caller = generate_caller_text(setting)
+print(c12_caller)
 exec(c12_caller)
 
 def generate_signature(setting):
