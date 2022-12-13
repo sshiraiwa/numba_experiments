@@ -64,6 +64,18 @@
       std::cout << data[2] << "\n";
       return ((std::complex<double> (*)(void **))address_)(data);
     }
+   std::complex<double> callptx(){
+      double ptx[3];
+      double data[3];      
+
+      data[0] = 3.0;
+      data[1] = 1000.;
+      data[2] = 0.;
+      ptx[0] = 0.;
+      ptx[1] = 1.;
+      ptx[2] = 0.;      
+      return ((std::complex<double> (*)(double *,double *))address_)(ptx, data);
+    }
   
  };
 %}

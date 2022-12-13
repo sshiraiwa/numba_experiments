@@ -82,6 +82,10 @@ class CallTest(object):
     def callz(self):
         return _numba_test.CallTest_callz(self)
     callz = _swig_new_instance_method(_numba_test.CallTest_callz)
+
+    def callptx(self):
+        return _numba_test.CallTest_callptx(self)
+    callptx = _swig_new_instance_method(_numba_test.CallTest_callptx)
     __swig_destroy__ = _numba_test.delete_CallTest
 
 # Register CallTest in _numba_test:
