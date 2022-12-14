@@ -66,15 +66,23 @@
     }
    std::complex<double> callptx(){
       double ptx[3];
-      double data[3];      
+      double data[3];            
+      void *ptr[2];      
 
-      data[0] = 3.0;
+      data[0] = 3;
       data[1] = 1000.;
       data[2] = 0.;
       ptx[0] = 0.;
       ptx[1] = 1.;
-      ptx[2] = 0.;      
-      return ((std::complex<double> (*)(double *,double *))address_)(ptx, data);
+      ptx[2] = 0.;
+      ptr[0] = &ptx;
+      ptr[1] = &data;      
+
+      std::cout << "ptx before call:" << ptx[0] << " " << ptx[1] << " " << ptx[2] << "\n";      
+      std::complex<double> ret = ((std::complex<double> (*)(double*, void **))address_)(ptx, ptr);
+      std::cout << "ptx after call:" << ptx[0] << " " << ptx[1] << " " << ptx[2] << "\n";
+
+      return ret;
     }
   
  };

@@ -52,19 +52,24 @@ def func5(x):
     return inner_c(input)
 '''
 
-#c12_caller = '''
-#def c12_caller(ptx, data):
-#    E = data[0] + 1j*data[1]
-#    density = (data[2] + 1)
-#    params = (E, density)
-#    return (inner_func(ptx, *params))
-#'''
+#setting = {"output": 2,
+#           "iscomplex": (2, 2),
+#           "kinds": (0, 1),
+#           "sizes": (1, 2),}
+           
+#def c12(ptx, density, E):
+#    density = density + 1
+#    return ptx[1] * (density * E[0].real + 1j*density * E[0].imag)
 
-setting = {"input": (2, 1),
-           "output": 2}
-def c12(ptx, E, density):
-    density = density + 1
-    return ptx[1] * (density * E.real + 1j*density * E.imag)
+setting = {"output": 2,
+           "iscomplex": (2, ),
+           "kinds": (1, ),
+           "sizes": (2, ),}
+def c12(ptx, density):
+    ptx[0] = 0
+    ptx[1] = 3
+    ptx[2] = 10
+    return density[0]
 
 #setting = {"input": (),
 #           "output" 2}
@@ -93,8 +98,22 @@ def generate_caller_text(settings):
     text.append("    return (inner_func(ptx, *params))")
     return '\n'.join(text)
 
+c12_caller = '''
+def c12_caller(ptx, data):
+    ptx = numba.carray(ptx, (3,), np.float64)
+    arr0r = numba.carray(data[0], (1,), np.float64)
+    arr0i = numba.carray(data[0], (1,), np.float64)
+    arr0 = arr0r[0]+1j*arr0i[0]
+    
+    arr3r = numba.carray(data[0], (2,), np.float64)
+    arr3i = numba.carray(data[0], (2,), np.float64)
+    arr3 = arr3r + 1j*arr3i
 
-c12_caller = generate_caller_text(setting)
+    params = (arr3,)
+    return (inner_func(ptx, *params))
+'''
+
+#c12_caller = generate_caller_text(setting)
 print(c12_caller)
 exec(c12_caller)
 
@@ -102,15 +121,21 @@ def generate_signature(setting):
 
     sig = ''
     if setting['output'] == 1:
-        sig += 'types.float64(CPointer(types.double, '
+        sig += 'types.float64(types.double[:], '
     else:
-        sig += 'types.complex128(CPointer(types.double), '
+        sig += 'types.complex128(types.double[:], '
 
-    for s in setting['input']:
+    for s, kind, size in zip(setting['iscomplex'], setting['kinds'], setting['sizes']):
         if s == 1:
-            sig += 'types.double,'
+            if kind == 0:
+                sig += 'types.double,'
+            else:
+                sig += 'types.double[:], '
         else:
-            sig += 'types.complex128,'
+            if kind == 0:
+                sig += 'types.complex128,'
+            else:
+                sig += 'types.complex128[:], '
 
     sig = sig + ")"
     return sig
@@ -153,7 +178,7 @@ def _copy_func_and_apply_params(f, params):
 
 c12_caller = _copy_func_and_apply_params(c12_caller, {'inner_func': inner_func})
 
-c12_caller = cfunc(types.complex128(types.CPointer(types.double), types.CPointer(types.double)))(c12_caller)
+c12_caller = cfunc(types.complex128(types.CPointer(types.double), types.CPointer(types.voidptr)))(c12_caller)
 
 from numba_test import CallTest
 
